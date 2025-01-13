@@ -1,7 +1,3 @@
-# Created by https://www.toptal.com/developers/gitignore/api/node
-# Edit at https://www.toptal.com/developers/gitignore?templates=node
-
-### Node ###
 # Logs
 logs
 *.log
@@ -11,7 +7,7 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 
-# Diagnostic reports (https://nodejs.org/api/report.html)
+# Diagnostic reports
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Runtime data
@@ -24,29 +20,30 @@ pids
 lib-cov
 
 # Coverage directory used by tools like istanbul
-coverage
+Backend/coverage/
 *.lcov
 
 # nyc test coverage
-.nyc_output
+Backend/.nyc_output/
 
-# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+# Grunt intermediate storage
 .grunt
 
-# Bower dependency directory (https://bower.io/)
+# Bower dependency directory
 bower_components
 
 # node-waf configuration
 .lock-wscript
 
-# Compiled binary addons (https://nodejs.org/api/addons.html)
-build/Release
+# Compiled binary addons
+Backend/build/Release/
 
 # Dependency directories
-node_modules/
+Backend/node_modules/
+Frontend/node_modules/
 jspm_packages/
 
-# Snowpack dependency directory (https://snowpack.dev/)
+# Snowpack dependency directory
 web_modules/
 
 # TypeScript cache
@@ -77,23 +74,25 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
+Backend/.env
+Backend/.env.development.local
+Backend/.env.test.local
+Backend/.env.production.local
+Backend/.env.local
+Frontend/.env
+Frontend/.env.local
 
-# parcel-bundler cache (https://parceljs.org/)
+# parcel-bundler cache
 .cache
 .parcel-cache
 
 # Next.js build output
 .next
-out
+Frontend/build/
 
 # Nuxt.js build / generate output
 .nuxt
-dist
+Frontend/dist/
 
 # Gatsby files
 .cache/
@@ -132,13 +131,8 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-### Node Patch ###
 # Serverless Webpack directories
 .webpack/
 
-# Optional stylelint cache
-
 # SvelteKit build / generate output
 .svelte-kit
-
-# End of https://www.toptal.com/developers/gitignore/api/node
