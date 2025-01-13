@@ -16,13 +16,9 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 // import routs
-// import products from "./routes/products.route.js"
-// import users from "./routes/registerUsers.route.js"
-// import cart from "./routes/cart.route.js"
+import patientDetails from "./routes/patientDetails.route.js"
 
 // route declaration
-// app.use("/api/v1/products", products)
-// app.use("/api/v1/users", users)
-// app.use("/api/v1/cart", cart)
+app.use("/api/v1/patient-details", patientDetails)
 
 export {app}
