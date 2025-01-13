@@ -17,8 +17,10 @@ app.use(cookieParser());
 
 // import routs
 import patientDetails from "./routes/patientDetails.route.js"
+import dietPlan from "./routes/dietPlan.route.js"
 
 // route declaration
 app.use("/api/v1/patient-details", patientDetails)
+app.use("/api/v1/diet-plan", dietPlan)
 
 export {app}
