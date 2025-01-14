@@ -101,6 +101,7 @@ const getAllPatients = asyncHandler(async (req, res) => {
 
         // Get total count for pagination
         const totalPatients = await PatientDetails.countDocuments(query);
+        const totalPatientsCount = totalPatients.length;
 
         // Get paginated patients with sorting
         const patients = await PatientDetails.find(query)

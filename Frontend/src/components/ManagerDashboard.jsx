@@ -20,26 +20,47 @@ const ManagerDashboard = () => {
     const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [patients, setPatients] = useState(0);
+    // const [patients, setPatients] = useState(0);
+    const [totalPatients, setTotalPatients] = useState(0);
+
+    const fetchPatientCount = async () => {
+        try {
+            const response = await axios.get('/api/v1/patient-details/get-all-patients');
+            // Check if response.data exists and has the expected structure
+            if (response.data && response.data.data) {
+                if (Array.isArray(response.data.data)) {
+                    setTotalPatients(response.data.data.length);
+                } else if (response.data.data.patients) {
+                    setTotalPatients(response.data.data.patients.length);
+                } else {
+                    setTotalPatients(0);
+                }
+            } else {
+                setTotalPatients(0);
+            }
+        } catch (error) {
+            console.error('Error fetching patient count:', error);
+            setTotalPatients(0);
+        }
+    };
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [mealPrepResponse, mealDeliveryResponse, staffResponse, patientsResponse] = await Promise.all([
+                const [mealPrepResponse, mealDeliveryResponse, staffResponse] = await Promise.all([
                     axios.get('/api/meal-preparations'),
                     axios.get('/api/meal-deliveries'),
                     axios.get('/api/staff'),
-                    axios.get('/api/v1/patient-details/get-all-patients')
+                    fetchPatientCount()
                 ]);
 
                 setMealPreparations(mealPrepResponse.data.data || []);
                 setMealDeliveries(mealDeliveryResponse.data.data || []);
                 setStaff(staffResponse.data.data || []);
-                setPatients(patientsResponse.data.data?.length || 0);
                 setError(null);
             } catch (error) {
                 console.error("Error fetching data:", error);
-                setError('Failed to load dashboard data. Please try again.');
+                setError('Failed to load dashboard data');
             } finally {
                 setLoading(false);
             }
@@ -81,7 +102,7 @@ const ManagerDashboard = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                         <StatCard
                             title="Total Patients"
-                            count={patients}
+                            count={totalPatients}
                             color={colors.primary}
                             icon="🏥"
                         />

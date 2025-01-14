@@ -17,7 +17,7 @@ const Login = () => {
 
         try {
             // Simulate API call
-            if (email === 'hospital_manager@xyz.com' && password === 'Password@2025') {
+            if (email === 'hospital_pantry@xyz.com' && password === 'Password@2025') {
                 localStorage.setItem('isLoggedIn', 'true');
                 toast.success('Login successful!', {
                     position: "top-right",
@@ -30,7 +30,7 @@ const Login = () => {
                 
                 // Wait for toast to show before navigation
                 await new Promise(resolve => setTimeout(resolve, 2000));
-                navigate('/manager-dashboard');
+                navigate('/pantry-dashboard');
             } else {
                 throw new Error('Invalid credentials');
             }
@@ -50,7 +50,7 @@ const Login = () => {
             {/* Left Panel - Decorative Side */}
             <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-blue-800 items-center justify-center">
                 <div className="text-center text-white p-8">
-                    <h1 className="text-5xl font-bold mb-6">Hospital Manager Login</h1>
+                    <h1 className="text-5xl font-bold mb-6">Pantry Staff Login</h1>
                     <p className="text-xl">Streamline your healthcare operations with our comprehensive management solution</p>
                 </div>
             </div>

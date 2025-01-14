@@ -5,7 +5,9 @@ import cookieParser from "cookie-parser"
 const app = express();
 
 app.use(cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
 }))
 
@@ -22,7 +24,6 @@ import pantryStaff from "./routes/pantry-staff.route.js"
 import mealPreparation from "./routes/mealPreparation.route.js"
 import deliveryPerson from "./routes/delivery-person.route.js"
 import mealDelivery from "./routes/mealDelivery.route.js"
-import dashboardRoutes from './routes/dashboard.route.js'
 
 // route declaration
 app.use("/api/v1/patient-details", patientDetails)
@@ -30,6 +31,6 @@ app.use("/api/v1/diet-plan", dietPlan)
 app.use("/api/v1/pantry-staff", pantryStaff)
 app.use("/api/v1/meal-preparation", mealPreparation)
 app.use("/api/v1/delivery-person", deliveryPerson)
-app.use('/api/v1/dashboard', dashboardRoutes)
+app.use("/api/v1/meal-delivery", mealDelivery)
 
 export {app}

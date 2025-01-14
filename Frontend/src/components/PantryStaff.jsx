@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Navbar from './Navbar';
+// import instance from '../utils/axiosConfig';
 
 const STAFF_ROLES = ["Pantry Staff", "Kitchen Staff", "Delivery Staff"];
 
@@ -55,7 +56,7 @@ const PantryStaff = () => {
 
     const fetchStaffMembers = async () => {
         try {
-            const response = await axios.get('/api/v1/pantry-staff/get-all-staff');
+            const response = await axios.get('http://localhost:8080/api/v1/pantry-staff/create-pantry-staff');
             setStaffMembers(response.data.data || []);
             setFilteredStaff(response.data.data || []);
         } catch (err) {
@@ -68,16 +69,20 @@ const PantryStaff = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('/api/v1/pantry-staff/create-staff', formData);
-            toast.success('Staff member added successfully');
-            setShowForm(false);
-            fetchStaffMembers();
-            setFormData({
-                name: '',
-                contactNumber: '',
-                location: '',
-                role: 'Pantry Staff'
-            });
+            const response = await axios.post('http://localhost:8080/api/v1/pantry-staff/create-pantry-staff', formData);
+            if (response.status === 201) {
+                toast.success('Staff member added successfully');
+                setShowForm(false);
+                fetchStaffMembers(); // Fetch updated staff list
+                setFormData({
+                    name: '',
+                    contactNumber: '',
+                    location: '',
+                    role: 'Pantry Staff'
+                });
+            } else {
+                toast.error('Something went wrong. Please try again.');
+            }
         } catch (err) {
             toast.error('Failed to add staff member: ' + err.message);
         }
