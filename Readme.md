@@ -6,5 +6,4 @@ This project focuses on developing a Hospital Food Delivery Management system, a
 
 ### Links:
 - **[Database Model ERD](https://app.eraser.io/workspace/wHsVZJ1mBs7lUKKpqgpJ?origin=share)**:
-- **[Deployment Link](#)**: A link to the deployed version of the application.
 
