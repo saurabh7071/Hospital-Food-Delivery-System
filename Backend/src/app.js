@@ -22,6 +22,7 @@ import pantryStaff from "./routes/pantry-staff.route.js"
 import mealPreparation from "./routes/mealPreparation.route.js"
 import deliveryPerson from "./routes/delivery-person.route.js"
 import mealDelivery from "./routes/mealDelivery.route.js"
+import dashboardRoutes from './routes/dashboard.route.js'
 
 // route declaration
 app.use("/api/v1/patient-details", patientDetails)
@@ -29,6 +30,6 @@ app.use("/api/v1/diet-plan", dietPlan)
 app.use("/api/v1/pantry-staff", pantryStaff)
 app.use("/api/v1/meal-preparation", mealPreparation)
 app.use("/api/v1/delivery-person", deliveryPerson)
-app.use("/api/v1/meal-delivery", mealDelivery)
+app.use('/api/v1/dashboard', dashboardRoutes)
 
 export {app}

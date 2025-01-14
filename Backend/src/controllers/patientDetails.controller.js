@@ -75,15 +75,63 @@ const createPatient = asyncHandler(async (req, res) => {
 
 // Get all patient records
 const getAllPatients = asyncHandler(async (req, res) => {
+    const { 
+        page = 1, 
+        limit = 10, 
+        search,
+        sortBy = 'createdAt',
+        order = 'desc'
+    } = req.query;
+
     try {
-        const patients = await PatientDetails.find();
+        // Build query
+        const query = {};
+
+        // Add search functionality
+        if (search) {
+            query.$or = [
+                { patientName: { $regex: search, $options: 'i' } },
+                { contactInformation: { $regex: search, $options: 'i' } },
+                { emergencyContact: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        // Calculate skip value for pagination
+        const skip = (Number(page) - 1) * Number(limit);
+
+        // Get total count for pagination
+        const totalPatients = await PatientDetails.countDocuments(query);
+
+        // Get paginated patients with sorting
+        const patients = await PatientDetails.find(query)
+            .sort({ [sortBy]: order === 'desc' ? -1 : 1 })
+            .skip(skip)
+            .limit(Number(limit))
+            .select('-__v')
+            .lean();
+
         if (patients.length === 0) {
             throw new ApiError(404, 'No patients found');
         }
 
+        // Calculate pagination info
+        const totalPages = Math.ceil(totalPatients / Number(limit));
+        const hasNextPage = page < totalPages;
+        const hasPrevPage = page > 1;
+
         return res
             .status(200)
-            .json(new ApiResponse(200, 'Patients retrieved successfully', patients));
+            .json(new ApiResponse(200, 'Patients retrieved successfully', {
+                patients,
+                pagination: {
+                    currentPage: Number(page),
+                    totalPages,
+                    totalPatients,
+                    hasNextPage,
+                    hasPrevPage,
+                    limit: Number(limit)
+                }
+            }));
 
     } catch (error) {
         console.error('Error fetching patients:', error);
