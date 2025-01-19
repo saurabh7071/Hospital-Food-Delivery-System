@@ -1,7 +1,8 @@
-import{ useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import PropTypes from 'prop-types';
 import Navbar from './Navbar';
+import Loading from '../common/Loading';
 
 // Hospital theme colors
 const colors = {
@@ -15,28 +16,25 @@ const colors = {
 };
 
 const ManagerDashboard = () => {
-    const [mealPreparations, setMealPreparations] = useState([]);
-    const [mealDeliveries, setMealDeliveries] = useState([]);
-    const [staff, setStaff] = useState([]);
+    const [mealPreparations] = useState([]);
+    const [mealDeliveries] = useState([]);
+    const [totalstaff, setTotalStaff] = useState(0);
+    const [totalPatients, setTotalPatients] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    // const [patients, setPatients] = useState(0);
-    const [totalPatients, setTotalPatients] = useState(0);
+
 
     const fetchPatientCount = async () => {
         try {
-            const response = await axios.get('/api/v1/patient-details/get-all-patients');
-            // Check if response.data exists and has the expected structure
-            if (response.data && response.data.data) {
-                if (Array.isArray(response.data.data)) {
-                    setTotalPatients(response.data.data.length);
-                } else if (response.data.data.patients) {
-                    setTotalPatients(response.data.data.patients.length);
-                } else {
-                    setTotalPatients(0);
-                }
+            const response = await axios.get('http://localhost:8080/api/v1/patient-details/get-all-patients');
+        
+            // Access the totalCount from pagination data
+            if (response.data?.message?.pagination?.totalCount) {
+                setTotalPatients(response.data.message.pagination.totalCount);
             } else {
-                setTotalPatients(0);
+                // Fallback to counting patients array if pagination data isn't available
+                const patients = response.data?.message?.patients || [];
+                setTotalPatients(patients.length);
             }
         } catch (error) {
             console.error('Error fetching patient count:', error);
@@ -44,37 +42,41 @@ const ManagerDashboard = () => {
         }
     };
 
+    const fetchPantryStaffCount = async () => {
+        try {
+            const response = await axios.get('http://localhost:8080/api/v1/pantry-staff/get-all-pantry-staff');
+
+            if(response.data && response.data.message && response.data.message.staff){
+                const staff = response.data.message.staff;
+                setTotalStaff(staff.length);
+            }else{
+                setTotalStaff(0);
+            }
+        } catch (error) {
+            console.error('Error fetching staff count:', error);
+            setTotalStaff(0);
+        }
+    };
+
+
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [mealPrepResponse, mealDeliveryResponse, staffResponse] = await Promise.all([
-                    axios.get('/api/meal-preparations'),
-                    axios.get('/api/meal-deliveries'),
-                    axios.get('/api/staff'),
-                    fetchPatientCount()
-                ]);
-
-                setMealPreparations(mealPrepResponse.data.data || []);
-                setMealDeliveries(mealDeliveryResponse.data.data || []);
-                setStaff(staffResponse.data.data || []);
+                await fetchPatientCount();
+                await fetchPantryStaffCount();
                 setError(null);
             } catch (error) {
-                console.error("Error fetching data:", error);
+                console.error("Error:", error);
                 setError('Failed to load dashboard data');
             } finally {
                 setLoading(false);
             }
         };
-
         fetchData();
     }, []);
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: colors.background }}>
-                <div className="text-xl text-primary animate-pulse">Loading...</div>
-            </div>
-        );
+        return (<Loading />);
     }
 
     if (error) {
@@ -120,14 +122,14 @@ const ManagerDashboard = () => {
                         />
                         <StatCard
                             title="Staff Members"
-                            count={staff.length}
+                            count={totalstaff}
                             color={colors.warning}
                             icon="👥"
                         />
                     </div>
 
                     {/* Data Tables */}
-                    <div className="space-y-6">
+                    {/* <div className="space-y-6">
                         <DataTable
                             title="Meal Preparations"
                             data={mealPreparations}
@@ -148,14 +150,14 @@ const ManagerDashboard = () => {
                         />
                         <DataTable
                             title="Staff Members"
-                            data={staff}
+                            data={totalstaff}
                             columns={[
                                 { key: '_id', label: 'ID' },
                                 { key: 'name', label: 'Name' },
                                 { key: 'role', label: 'Role' }
                             ]}
                         />
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </>
@@ -185,50 +187,50 @@ StatCard.propTypes = {
     icon: PropTypes.string.isRequired
 };
 
-const DataTable = ({ title, data, columns }) => (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <h2 className="text-xl font-semibold p-4 border-b" style={{ color: colors.primary }}>
-            {title}
-        </h2>
-        <div className="overflow-x-auto">
-            <table className="w-full">
-                <thead>
-                    <tr className="bg-gray-50">
-                        {columns.map(column => (
-                            <th key={column.key} className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                                {column.label}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.map((item, index) => (
-                        <tr
-                            key={item._id}
-                            className={`border-t hover:bg-gray-50 ${index % 2 === 0 ? 'bg-gray-50/50' : ''}`}
-                        >
-                            {columns.map(column => (
-                                <td key={column.key} className="px-4 py-3 text-sm text-gray-800">
-                                    {item[column.key]}
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    </div>
-);
+// const DataTable = ({ title, data, columns }) => (
+//     <div className="bg-white rounded-lg shadow-md overflow-hidden">
+//         <h2 className="text-xl font-semibold p-4 border-b" style={{ color: colors.primary }}>
+//             {title}
+//         </h2>
+//         <div className="overflow-x-auto">
+//             <table className="w-full">
+//                 <thead>
+//                     <tr className="bg-gray-50">
+//                         {columns.map(column => (
+//                             <th key={column.key} className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+//                                 {column.label}
+//                             </th>
+//                         ))}
+//                     </tr>
+//                 </thead>
+//                 <tbody>
+//                     {data.map((item, index) => (
+//                         <tr
+//                             key={item._id}
+//                             className={`border-t hover:bg-gray-50 ${index % 2 === 0 ? 'bg-gray-50/50' : ''}`}
+//                         >
+//                             {columns.map(column => (
+//                                 <td key={column.key} className="px-4 py-3 text-sm text-gray-800">
+//                                     {item[column.key]}
+//                                 </td>
+//                             ))}
+//                         </tr>
+//                     ))}
+//                 </tbody>
+//             </table>
+//         </div>
+//     </div>
+// );
 
-DataTable.propTypes = {
-    title: PropTypes.string.isRequired,
-    data: PropTypes.arrayOf(PropTypes.object).isRequired,
-    columns: PropTypes.arrayOf(
-        PropTypes.shape({
-            key: PropTypes.string.isRequired,
-            label: PropTypes.string.isRequired
-        })
-    ).isRequired
-};
+// DataTable.propTypes = {
+//     title: PropTypes.string.isRequired,
+//     data: PropTypes.arrayOf(PropTypes.object).isRequired,
+//     columns: PropTypes.arrayOf(
+//         PropTypes.shape({
+//             key: PropTypes.string.isRequired,
+//             label: PropTypes.string.isRequired
+//         })
+//     ).isRequired
+// };
 
 export default ManagerDashboard;

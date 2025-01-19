@@ -217,14 +217,14 @@ const DietChart = () => {
                         placeholder="Search patient diet plans..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-blue-500"
                     />
                 </div>
                 <div className="md:w-48">
                     <select
                         value={searchFilter}
                         onChange={(e) => setSearchFilter(e.target.value)}
-                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-blue-500"
                     >
                         <option value="all">All Fields</option>
                         <option value="name">Patient Name</option>

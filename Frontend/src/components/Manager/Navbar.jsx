@@ -84,11 +84,6 @@ const Navbar = ({ userName }) => {
                     </div>
                 </div>
             </nav>
-
-            {/* Main Content Wrapper */}
-            <div className="lg:ml-64">
-                {/* Your page content goes here */}
-            </div>
         </>
     );
 };

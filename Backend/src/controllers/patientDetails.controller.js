@@ -75,68 +75,60 @@ const createPatient = asyncHandler(async (req, res) => {
 
 // Get all patient records
 const getAllPatients = asyncHandler(async (req, res) => {
-    const { 
-        page = 1, 
-        limit = 10, 
-        search,
-        sortBy = 'createdAt',
-        order = 'desc'
-    } = req.query;
-
     try {
-        // Build query
+        const { 
+            page = 1, 
+            limit = 10,
+            search,
+            searchField = 'all'
+        } = req.query;
+
+        // Build search query
         const query = {};
-
-        // Add search functionality
         if (search) {
-            query.$or = [
-                { patientName: { $regex: search, $options: 'i' } },
-                { contactInformation: { $regex: search, $options: 'i' } },
-                { emergencyContact: { $regex: search, $options: 'i' } }
-            ];
+            if (searchField === 'name') {
+                query.patientName = { $regex: search, $options: 'i' };
+            } else if (searchField === 'room') {
+                query.roomNumber = search;
+            } else if (searchField === 'bed') {
+                query.bedNumber = search;
+            } else if (searchField === 'disease') {
+                query.diseases = { $regex: search, $options: 'i' };
+            } else {
+                // 'all' or default case
+                query.$or = [
+                    { patientName: { $regex: search, $options: 'i' } },
+                    { roomNumber: search },
+                    { bedNumber: search },
+                    { diseases: { $regex: search, $options: 'i' } },
+                    { contactInformation: { $regex: search, $options: 'i' } }
+                ];
+            }
         }
 
-        // Calculate skip value for pagination
-        const skip = (Number(page) - 1) * Number(limit);
-
-        // Get total count for pagination
-        const totalPatients = await PatientDetails.countDocuments(query);
-        const totalPatientsCount = totalPatients.length;
-
-        // Get paginated patients with sorting
+        // Get total count
+        const totalCount = await PatientDetails.countDocuments(query);
+        
+        // Get paginated and filtered patients
         const patients = await PatientDetails.find(query)
-            .sort({ [sortBy]: order === 'desc' ? -1 : 1 })
-            .skip(skip)
-            .limit(Number(limit))
-            .select('-__v')
-            .lean();
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .sort({ createdAt: -1 });
 
-        if (patients.length === 0) {
-            throw new ApiError(404, 'No patients found');
-        }
-
-        // Calculate pagination info
-        const totalPages = Math.ceil(totalPatients / Number(limit));
-        const hasNextPage = page < totalPages;
-        const hasPrevPage = page > 1;
-
-        return res
-            .status(200)
-            .json(new ApiResponse(200, 'Patients retrieved successfully', {
+        return res.status(200).json({
+            success: true,
+            message: {
                 patients,
                 pagination: {
-                    currentPage: Number(page),
-                    totalPages,
-                    totalPatients,
-                    hasNextPage,
-                    hasPrevPage,
-                    limit: Number(limit)
+                    totalCount,
+                    totalPages: Math.ceil(totalCount / limit),
+                    currentPage: parseInt(page),
+                    limit: parseInt(limit)
                 }
-            }));
-
+            }
+        });
     } catch (error) {
-        console.error('Error fetching patients:', error);
-        throw new ApiError(500, 'Server error, please try again later');
+        throw new ApiError(500, "Error fetching patients");
     }
 });
 

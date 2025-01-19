@@ -1,19 +1,20 @@
+import './App.css'
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import PropTypes from 'prop-types';
-import ManagerLogin from './components/ManagerLogin'
-import ManagerDashboard from './components/ManagerDashboard'
-import PatientDetails from './components/PatientDetails'
-import './App.css'
+// Manager Components
+import ManagerLogin from './components/Login/ManagerLogin'
+import ManagerDashboard from './components/Manager/ManagerDashboard'
+import MealPreparation from './components/Manager/MealPreparation'
+import PatientDetails from './components/Manager/PatientDetails'
+import DietChart from './components/Manager/DietChart'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import DietChart from './components/DietChart'
-import PantryStaff from './components/PantryStaff'
-import MealPreparation from './components/MealPreparation'
-import MealPreparationList from './components/MealPreparationList'
+import PantryStaff from './components/Manager/PantryStaff'
+import MealPreparationList from './components/Pantry/MealPreparationList'
 
-import PantryStaffLogin from './components/PantryStaffLogin'
-import PantryDashboard from './components/PantryDashboard'
-import DeliveryAssignment from './components/DeliveryAssignment'
+import PantryStaffLogin from './components/Login/PantryStaffLogin'
+import PantryDashboard from './components/Pantry/PantryDashboard'
+import DeliveryAssignment from './components/Pantry/DeliveryAssignment'
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {

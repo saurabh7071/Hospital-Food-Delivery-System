@@ -48,7 +48,7 @@ const Login = () => {
     return (
         <div className="flex min-h-screen w-full bg-gray-50">
             {/* Left Panel - Decorative Side */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-blue-800 items-center justify-center">
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-blue-800 items-center justify-center outline-none">
                 <div className="text-center text-white p-8">
                     <h1 className="text-5xl font-bold mb-6">Hospital Manager Login</h1>
                     <p className="text-xl">Streamline your healthcare operations with our comprehensive management solution</p>
@@ -83,6 +83,7 @@ const Login = () => {
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
                                 placeholder="Enter your email"
+                                style={{outline: 'none'}}
                             />
                         </div>
                         <div>
@@ -93,11 +94,12 @@ const Login = () => {
                                 type="password"
                                 id="password"
                                 name="password"
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-blue-600 focus:border-blue-700 transition duration-150 ease-in-out"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 placeholder="Enter your password"
+                                style={{outline: 'none'}}
                             />
                         </div>
                         <button

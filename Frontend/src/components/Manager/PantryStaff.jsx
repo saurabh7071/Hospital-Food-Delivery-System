@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Navbar from './Navbar';
-// import instance from '../utils/axiosConfig';
+import Loading from '../common/Loading';
 
 const STAFF_ROLES = ["Pantry Staff", "Kitchen Staff", "Delivery Staff"];
 
@@ -13,6 +13,10 @@ const PantryStaff = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchFilter, setSearchFilter] = useState('name');
     const [filteredStaff, setFilteredStaff] = useState([]);
+    const [itemsPerPage] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
+    const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -54,13 +58,43 @@ const PantryStaff = () => {
         setFilteredStaff(filtered);
     }, [searchTerm, searchFilter, staffMembers]);
 
+    useEffect(() => {
+        fetchStaffMembers();
+    }, [currentPage, searchTerm, searchFilter]);
+
     const fetchStaffMembers = async () => {
+        setLoading(true);
         try {
-            const response = await axios.get('http://localhost:8080/api/v1/pantry-staff/create-pantry-staff');
-            setStaffMembers(response.data.data || []);
-            setFilteredStaff(response.data.data || []);
+            const searchParams = new URLSearchParams({
+                page: currentPage,
+                limit: itemsPerPage
+            });
+
+            if (searchTerm) {
+                searchParams.append('search', searchTerm);
+                if (searchFilter !== 'all') {
+                    searchParams.append('searchField', searchFilter);
+                }
+            }
+
+            const response = await axios.get(
+                `http://localhost:8080/api/v1/pantry-staff/get-all-pantry-staff?${searchParams.toString()}`
+            );
+
+            if (response.data?.message?.staff) {
+                setStaffMembers(response.data.message.staff);
+                setFilteredStaff(response.data.message.staff);
+                
+                if (response.data.message.pagination) {
+                    setTotalPages(response.data.message.pagination.totalPages);
+                }
+            }
+            setError(null);
         } catch (err) {
-            toast.error('Failed to fetch staff members: ' + err.message);
+            console.error('Error fetching staff:', err);
+            setError(err.message || 'Failed to fetch staff');
+            setStaffMembers([]);
+            setFilteredStaff([]);
         } finally {
             setLoading(false);
         }
@@ -73,7 +107,7 @@ const PantryStaff = () => {
             if (response.status === 201) {
                 toast.success('Staff member added successfully');
                 setShowForm(false);
-                fetchStaffMembers(); // Fetch updated staff list
+                fetchStaffMembers(); 
                 setFormData({
                     name: '',
                     contactNumber: '',
@@ -97,14 +131,14 @@ const PantryStaff = () => {
                         placeholder="Search staff members..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500  focus:ring-blue-500"
                     />
                 </div>
                 <div className="md:w-48">
                     <select
                         value={searchFilter}
                         onChange={(e) => setSearchFilter(e.target.value)}
-                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500  focus:ring-blue-500"
                     >
                         <option value="all">All Fields</option>
                         <option value="name">Name</option>
@@ -121,17 +155,82 @@ const PantryStaff = () => {
         </div>
     );
 
-    if (loading) {
-        return (
-            <>
-                <Navbar userName="Hospital Manager" />
-                <div className="lg:ml-64 p-4">
-                    <div className="flex items-center justify-center min-h-screen">
-                        <div className="text-xl text-gray-600">Loading staff data...</div>
-                    </div>
+    const Pagination = () => (
+        <div className="px-6 py-4 bg-white border-t border-gray-200">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                    <p className="text-sm text-gray-700">
+                        Showing page <span className="font-medium">{currentPage}</span> of{' '}
+                        <span className="font-medium">{totalPages}</span>
+                    </p>
                 </div>
-            </>
-        );
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                        className={`px-3 py-2 rounded-md text-sm font-medium ${
+                            currentPage === 1
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-300'
+                        }`}
+                    >
+                        First
+                    </button>
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className={`px-3 py-2 rounded-md text-sm font-medium ${
+                            currentPage === 1
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-300'
+                        }`}
+                    >
+                        Previous
+                    </button>
+                    <div className="flex items-center gap-1">
+                        {[...Array(totalPages)].map((_, idx) => (
+                            <button
+                                key={idx + 1}
+                                onClick={() => setCurrentPage(idx + 1)}
+                                className={`w-8 h-8 rounded-md text-sm font-medium ${
+                                    currentPage === idx + 1
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-300'
+                                }`}
+                            >
+                                {idx + 1}
+                            </button>
+                        )).slice(Math.max(0, currentPage - 2), Math.min(totalPages, currentPage + 1))}
+                    </div>
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className={`px-3 py-2 rounded-md text-sm font-medium ${
+                            currentPage === totalPages
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-300'
+                        }`}
+                    >
+                        Next
+                    </button>
+                    <button
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className={`px-3 py-2 rounded-md text-sm font-medium ${
+                            currentPage === totalPages
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-white text-blue-600 hover:bg-blue-50 border border-blue-300'
+                        }`}
+                    >
+                        Last
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+
+    if (loading) {
+        return (<Loading />);
     }
 
     return (
@@ -164,7 +263,7 @@ const PantryStaff = () => {
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500  focus:ring-blue-500"
                                         required
                                     />
                                 </div>
@@ -177,7 +276,7 @@ const PantryStaff = () => {
                                         type="tel"
                                         value={formData.contactNumber}
                                         onChange={(e) => setFormData({...formData, contactNumber: e.target.value})}
-                                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500  focus:ring-blue-500"
                                         pattern="[0-9]{10}"
                                         title="Please enter a valid 10-digit phone number"
                                         required
@@ -192,7 +291,7 @@ const PantryStaff = () => {
                                         type="text"
                                         value={formData.location}
                                         onChange={(e) => setFormData({...formData, location: e.target.value})}
-                                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500  focus:ring-blue-500"
                                         required
                                     />
                                 </div>
@@ -204,7 +303,7 @@ const PantryStaff = () => {
                                     <select
                                         value={formData.role}
                                         onChange={(e) => setFormData({...formData, role: e.target.value})}
-                                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-blue-500"
                                         required
                                     >
                                         {STAFF_ROLES.map(role => (
@@ -233,33 +332,36 @@ const PantryStaff = () => {
                                 {searchTerm ? 'No matching staff members found.' : 'No staff members found. Add new staff to get started.'}
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {filteredStaff.map((staff) => (
-                                            <tr key={staff._id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap">{staff.name}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{staff.contactNumber}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{staff.location}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">{staff.role}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                    <button className="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
-                                                    <button className="text-red-600 hover:text-red-900">Delete</button>
-                                                </td>
+                            <>
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {(searchTerm ? filteredStaff : staffMembers).map((staffMember) => (
+                                                <tr key={staffMember._id} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 whitespace-nowrap">{staffMember.name}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">{staffMember.contactNumber}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">{staffMember.location}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">{staffMember.role}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                        <button className="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                                                        <button className="text-red-600 hover:text-red-900">Delete</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <Pagination />
+                            </>
                         )}
                     </div>
                 </div>
